@@ -50,21 +50,30 @@ func UpgradeToWebSocket(w http.ResponseWriter, r *http.Request) (net.Conn, error
 
 func readFrame(conn net.Conn) ([]byte, error) {
     header := make([]byte, 2)
-
-    log.Printf("header: %v", header)
-    _, err := conn.Read(header)
-    if err != nil {
-        log.Printf("Error reading header: %v", err)
+    if _, err := conn.Read(header); err != nil {
         return nil, err
     }
 
-    length := int(header[1] & 0x7F)
+    length := int(header[1] & 0x7F)  // Length of payload
+    isMasked := (header[1] & 0x80) > 0  // Check if payload is masked
+
+    var maskingKey []byte
+    if isMasked {
+        maskingKey = make([]byte, 4)
+        if _, err := conn.Read(maskingKey); err != nil {
+            return nil, err
+        }
+    }
 
     payload := make([]byte, length)
-    _, err = conn.Read(payload)
-    if err != nil {
-        log.Printf("Error reading payload: %v", payload)
+    if _, err := conn.Read(payload); err != nil {
         return nil, err
+    }
+
+    if isMasked {
+        for i := range payload {
+            payload[i] ^= maskingKey[i % 4]
+        }
     }
 
     return payload, nil
