@@ -50,8 +50,11 @@ func UpgradeToWebSocket(w http.ResponseWriter, r *http.Request) (net.Conn, error
 
 func readFrame(conn net.Conn) ([]byte, error) {
     header := make([]byte, 2)
+
+    log.Printf("header: %v", header)
     _, err := conn.Read(header)
     if err != nil {
+        log.Printf("Error reading header: %v", err)
         return nil, err
     }
 
@@ -60,6 +63,7 @@ func readFrame(conn net.Conn) ([]byte, error) {
     payload := make([]byte, length)
     _, err = conn.Read(payload)
     if err != nil {
+        log.Printf("Error reading payload: %v", payload)
         return nil, err
     }
 

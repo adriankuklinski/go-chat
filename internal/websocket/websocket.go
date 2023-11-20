@@ -2,6 +2,7 @@ package websocket
 
 import (
     "fmt"
+    "io"
     "log"
     "net"
     "net/http"
@@ -53,9 +54,14 @@ func handleConnection(conn net.Conn, chatServer *chat.Server) {
     log.Println("New connection from:", conn.RemoteAddr())
 
     for {
+        fmt.Println("Attempting to read message")
         message, err := wsClient.Conn.ReadMessage()
         if err != nil {
-            fmt.Println("Error reading message:", err)
+            if err == io.EOF {
+                fmt.Println("Client disconnected")
+            } else {
+                fmt.Println("Error reading message:", err)
+            }
             break
         }
 
