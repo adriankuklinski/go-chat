@@ -19,14 +19,17 @@ type TelnetClient struct {
 	Conn     net.Conn
 }
 
-func (tnClient *TelnetClient) Send(msg chat.Message) {
+func (tnClient *TelnetClient) Send(msg chat.Message) error {
 	formattedMessage := fmt.Sprintf("%s [%s]: %s\n", msg.Timestamp.Format("15:04:05"), msg.Username, msg.Text)
 
 	_, err := tnClient.Conn.Write([]byte(formattedMessage))
 	if err != nil {
 		fmt.Println("Error sending message to Telnet client:", err)
 		tnClient.Conn.Close()
+        return err
 	}
+
+    return nil
 }
 
 func StartTelnetServer(addr string, chatServer *chat.Server) {
@@ -66,6 +69,7 @@ func handleConnection(tnClient *TelnetClient, chatServer *chat.Server) {
 		msg := chat.Message{
 			Username:  tnClient.Username,
 			Text:      text,
+            Type:      "message",
 			Timestamp: time.Now(),
 		}
 

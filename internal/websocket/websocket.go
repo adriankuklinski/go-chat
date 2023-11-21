@@ -1,6 +1,7 @@
 package websocket
 
 import (
+    "encoding/json"
     "fmt"
     "io"
     "log"
@@ -18,6 +19,12 @@ type WebSocketClient struct {
     ID       string
     Username string
     Conn     *ws.WebSocketConnection
+}
+
+type Message struct {
+    Type     string `json:"type"`
+    Username string `json:"username"`
+    Text string `json:"text"`
 }
 
 func StartWebSocketServer(addr string, chatServer *chat.Server) {
@@ -54,7 +61,6 @@ func handleConnection(conn net.Conn, chatServer *chat.Server) {
     log.Println("New connection from:", conn.RemoteAddr())
 
     for {
-        fmt.Println("Attempting to read message")
         message, err := wsClient.Conn.ReadMessage()
         if err != nil {
             if err == io.EOF {
@@ -65,9 +71,17 @@ func handleConnection(conn net.Conn, chatServer *chat.Server) {
             break
         }
 
+        var wsResponse Message
+        err = json.Unmarshal([]byte(message), &wsResponse)
+        if err != nil {
+            fmt.Println("Error unmarshalling client message", err)
+            return
+        }
+
         msg := chat.Message{
             Username:  wsClient.Username,
-            Text:      string(message),
+            Text:      wsResponse.Text,
+            Type:      wsResponse.Type,
             Timestamp: time.Now(),
         }
 
@@ -75,11 +89,18 @@ func handleConnection(conn net.Conn, chatServer *chat.Server) {
     }
 }
 
-func (wc *WebSocketClient) Send(msg chat.Message) {
-    formattedMessage := fmt.Sprintf("%s [%s]: %s\n", msg.Timestamp.Format("15:04:05"), msg.Username, msg.Text)
+func (wc *WebSocketClient) Send(msg chat.Message) error{
+    jsonData, err := json.Marshal(msg)
+    if err != nil {
+        fmt.Println("Error marshalling message to JSON:", err)
+        return err
+    }
 
-    err := wc.Conn.WriteMessage([]byte(formattedMessage))
+    err = wc.Conn.WriteMessage(jsonData)
     if err != nil {
         fmt.Println("Error sending message:", err)
+        return err
     }
+
+    return nil
 }

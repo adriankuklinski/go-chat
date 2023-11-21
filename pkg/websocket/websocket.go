@@ -80,9 +80,16 @@ func readFrame(conn net.Conn) ([]byte, error) {
 }
 
 func writeFrame(conn net.Conn, data []byte) error {
+    fmt.Println("before frame data:")
+    fmt.Println(string(data))
     frame := []byte{0x81, byte(len(data))}
     frame = append(frame, data...)
 
+
+    fmt.Printf("Frame header: [%x %x]\n", frame[0], frame[1])
+    fmt.Printf("Frame payload: %s\n", string(frame[2:]))
+    fmt.Println("after frame data: ");
+    fmt.Println(string(frame));
     _, err := conn.Write(frame)
     return err
 }
