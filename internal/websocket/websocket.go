@@ -75,7 +75,11 @@ func handleConnection(conn net.Conn, chatServer *chat.Server) {
         err = json.Unmarshal([]byte(message), &wsResponse)
         if err != nil {
             fmt.Println("Error unmarshalling client message", err)
-            return
+
+            wsResponse = Message{
+                Text: string(message),
+                Type: "message",
+            }
         }
 
         msg := chat.Message{
