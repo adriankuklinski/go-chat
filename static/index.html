@@ -2,41 +2,19 @@
 <html>
 <head>
     <title>Chat App</title>
-    <style>
-        #terminal {
-            height: 300px;
-            overflow-y: auto;
-            background-color: black;
-            color: limegreen;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            margin-bottom: 10px;
-        }
-        #typingIndicator {
-            color: gray;
-            font-style: italic;
-        }
-        #messageInput {
-            width: calc(100% - 22px);
-            padding: 5px;
-            font-family: 'Courier New', monospace;
-            margin-bottom: 10px;
-        }
-        #sendButton {
-            display: block;
-            width: 100%;
-            padding: 5px;
-            font-family: 'Courier New', monospace;
-        }
-    </style>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-    <div id="terminal"></div>
-    <div id="typingIndicator"></div>
-    <input type="text" id="messageInput" oninput="sendTypingNotification()">
-    <button id="sendButton" onclick="sendMessage()">Send</button>
-
+    <div class="screen">
+        <div class="crt">
+            <div id="terminal" class="output"></div>
+            <div id="typingIndicator" class="command"></div>
+            <div id="inputContainer">
+                <span class="command">></span>
+                <input type="text" id="messageInput" class="command" oninput="sendTypingNotification()" onkeypress="handleInput(event)">
+            </div>
+        </div>
+    </div>
     <script src="./js/app.js"></script>
 </body>
 </html>
